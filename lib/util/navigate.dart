@@ -1,4 +1,6 @@
-import 'package:go_router/go_router.dart' show GoRouter, GoRoute;
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'
+    show GoRouter, GoRoute, CustomTransitionPage;
 
 import '../view/home/home_page.dart' show HomePage;
 import '../view/login/login_page.dart';
@@ -62,7 +64,19 @@ class Navigate {
       GoRoute(
         path: home,
         name: 'home',
-        builder: (context, state) => const HomePage(),
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const HomePage(),
+            transitionDuration: const Duration(milliseconds: 800),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) =>
+                    FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: login,

@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart'
-    show BuildContext, Widget, Image, Hero, Center, Scaffold;
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,21 +18,18 @@ class SplashPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // 当初始化完成时导航到主页
-    ref.listen<AsyncValue<void>>(splashProvider, (previous, next) {
-      if (next.hasValue) {
-        context.go(Navigate.home);
-      }
-    });
+    ref.listen<AsyncValue<void>>(
+      splashProvider,
+      (previous, next) {
+        if (next.hasValue) {
+          context.go(Navigate.home);
+        }
+      },
+    );
 
-    return Scaffold(
-      body: Center(
-        child: Hero(
-          tag: 'app_icon', // Hero动画标签，与主页的应用图标形成过渡动画
-          child: Image.asset(
-            '${ImagePath.instance.icon}app_icon.png',
-          ),
-        ),
-      ),
+    return Image.asset(
+      '${ImagePath.instance.splash}splash.jpg',
+      fit: BoxFit.cover,
     );
   }
 }

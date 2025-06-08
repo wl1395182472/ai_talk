@@ -45,12 +45,12 @@ class ExploreState {
 }
 
 class ExploreNotifier extends StateNotifier<ExploreState> {
-  ExploreNotifier() : super(const ExploreState()) {
+  ExploreNotifier() : super(const ExploreState(isLoading: true)) {
     refreshChatRooms();
   }
 
   Future<void> refreshChatRooms() async {
-    state = state.copyWith(isRefreshing: true, error: null);
+    state = state.copyWith(isRefreshing: true, isLoading: true, error: null);
     try {
       final response = await ApiService.instance.group.getHomePageGroups(
         limit: 10,
@@ -61,13 +61,18 @@ class ExploreNotifier extends StateNotifier<ExploreState> {
         final newChatRooms = response.result as List<ChatRoom>;
         state = state.copyWith(
           isRefreshing: false,
+          isLoading: false,
           chatRoomList: newChatRooms,
           currentPage: 1,
           hasMoreData: newChatRooms.length >= 10,
         );
       } else {
         Log.instance.logger.e(response.msg);
-        state = state.copyWith(isRefreshing: false, error: response.msg);
+        state = state.copyWith(
+          isRefreshing: false,
+          isLoading: false,
+          error: response.msg,
+        );
       }
     } catch (error, stackTrace) {
       Log.instance.logger.e(
@@ -75,7 +80,11 @@ class ExploreNotifier extends StateNotifier<ExploreState> {
         error: error,
         stackTrace: stackTrace,
       );
-      state = state.copyWith(isRefreshing: false, error: error.toString());
+      state = state.copyWith(
+        isRefreshing: false,
+        isLoading: false,
+        error: error.toString(),
+      );
     }
   }
 

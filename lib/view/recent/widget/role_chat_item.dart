@@ -5,22 +5,22 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../component/global_text.dart';
 import '../../../component/url_image.dart';
-import '../../../constant/image_path.dart';
-import '../../../model/character.dart';
+import '../../../model/recent_chat_character.dart';
 
-class RoleItem extends StatelessWidget {
-  final Character character;
+class RoleChatItem extends StatelessWidget {
+  final RecentChatCharacter roleChat;
   final VoidCallback? onTap;
 
-  const RoleItem({
+  const RoleChatItem({
     super.key,
-    required this.character,
+    required this.roleChat,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final scale = min(1.w, 1.h);
+    final avatarSize = scale * 150;
 
     return Material(
       color: Colors.transparent,
@@ -38,8 +38,8 @@ class RoleItem extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: scale * 150,
-                height: scale * 150,
+                width: avatarSize,
+                height: avatarSize,
                 clipBehavior: Clip.hardEdge,
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -59,9 +59,9 @@ class RoleItem extends StatelessWidget {
                     ),
                   ),
                   child: UrlImage(
-                    url: character.avatar,
-                    width: scale * 150,
-                    height: scale * 150,
+                    url: roleChat.avatar,
+                    width: avatarSize,
+                    height: avatarSize,
                     errorWidget: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
@@ -69,7 +69,6 @@ class RoleItem extends StatelessWidget {
                       ),
                       child: Icon(
                         Icons.person,
-                        size: scale * 80,
                         color: Color(0xffcccccc),
                       ),
                     ),
@@ -82,15 +81,17 @@ class RoleItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GlobalText(
-                      character.name,
+                      roleChat.name,
                       fontSize: 46.sp,
                       height: 65 / 46,
                       fontWeight: FontWeight.w600,
                     ),
                     GlobalText(
-                      character.shortDescription,
+                      roleChat.shortDescription.isNotEmpty
+                          ? roleChat.shortDescription
+                          : '开始对话',
                       maxLines: 1,
-                      color: Color(0xff333333).withValues(alpha: 0.8),
+                      color: const Color(0xff333333).withValues(alpha: 0.8),
                       fontSize: 40.sp,
                       height: 56 / 40,
                       fontWeight: FontWeight.w400,
@@ -98,18 +99,6 @@ class RoleItem extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                padding: EdgeInsets.all(scale * 10),
-                decoration: BoxDecoration(
-                  color: Colors.black38,
-                  borderRadius: BorderRadius.circular(100.0),
-                ),
-                child: Image.asset(
-                  '${ImagePath.instance.global}collect.png',
-                  width: scale * 50,
-                  height: scale * 50,
-                ),
-              )
             ],
           ),
         ),

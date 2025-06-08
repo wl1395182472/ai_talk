@@ -1,136 +1,118 @@
 import 'dart:math';
 
+import 'package:ai_talk/component/global_text.dart';
+import 'package:ai_talk/component/url_image.dart';
+import 'package:ai_talk/model/user.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../component/global_button.dart';
-import '../../../component/global_text.dart';
-import '../../../component/url_image.dart';
 import '../../../constant/image_path.dart';
-import '../profile_provider.dart';
 
-class ProfileUserInfo extends ConsumerWidget {
-  const ProfileUserInfo({super.key});
+class ProfileUserInfo extends StatelessWidget {
+  final User? userInfo;
+
+  const ProfileUserInfo({
+    super.key,
+    this.userInfo,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(profileProvider.notifier);
-    final state = ref.watch(profileProvider);
+  Widget build(BuildContext context) {
     final value = min(1.w, 1.h);
 
-    return Container(
-      margin: EdgeInsets.symmetric(
-        vertical: 23.h,
-        horizontal: value * 69,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: value * 184,
-            height: value * 184,
+    return Column(
+      children: [
+        Container(
+          clipBehavior: Clip.none,
+          width: value * 118,
+          height: value * 118,
+          transformAlignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..scale(230 / 118, 230 / 118)
+            ..setTranslationRaw(0, -value * 112 * (118 / 230), 0),
+          alignment: Alignment.center,
+          child: Container(
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white,
-                width: value * 3,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: value * 10,
-                  offset: Offset(0, value * 4),
-                ),
-              ],
+              border: Border.all(color: Colors.white),
+              borderRadius: BorderRadius.circular(value * 100),
             ),
-            child: ClipOval(
-              child: UrlImage(
-                url: state.userInfo?.avatar ?? '',
-                errorWidget: Container(
-                  width: value * 184,
-                  height: value * 184,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Color(0xfff5f5f5),
-                  ),
-                  child: Icon(
-                    Icons.person,
-                    size: value * 80,
-                    color: Color(0xffcccccc),
-                  ),
+            child: UrlImage(
+              url: userInfo?.avatar ?? '',
+              width: value * 230,
+              height: value * 230,
+              fit: BoxFit.fill,
+              errorWidget: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xfff2f2f2),
+                ),
+                child: Icon(
+                  Icons.person,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: value * 46),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GlobalText(
-                          state.userInfo?.username ?? 'Unknown User',
-                          color: Colors.black,
-                          fontSize: value * 52,
-                          fontWeight: FontWeight.w700,
-                          height: 73 / 52,
-                          letterSpacing: value,
-                        ),
-                      ),
-                    ],
+        ),
+        SizedBox(height: value * 17),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: value * 40),
+                child: Center(
+                  child: GlobalText(
+                    userInfo?.username ?? 'Unknown User',
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    color: Colors.black,
+                    fontSize: value * 52,
+                    fontWeight: FontWeight.w700,
+                    height: 73 / 52,
+                    letterSpacing: value,
                   ),
-                  SizedBox(height: value * 17),
-                  Row(
-                    children: [
-                      Image.asset(
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: value * 6),
+        Row(
+          children: [
+            Expanded(
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Color(0xff8a8a8a),
+                    fontSize: value * 35,
+                    fontWeight: FontWeight.w400,
+                    height: 48 / 35,
+                    letterSpacing: value,
+                  ),
+                  children: [
+                    WidgetSpan(
+                      child: Image.asset(
                         '${ImagePath.instance.global}email.png',
                         width: value * 40,
                         height: value * 40,
                         color: Color(0xff8a8a8a),
                       ),
-                      SizedBox(width: value * 12),
-                      Expanded(
-                        child: GlobalText(
-                          state.userInfo?.email ?? 'No email',
-                          color: Color(0xff8a8a8a),
-                          fontSize: value * 35,
-                          fontWeight: FontWeight.w400,
-                          height: 48 / 35,
-                          letterSpacing: value,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          GlobalButton(
-            onPressed: controller.onClickEdit,
-            height: value * 69,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Color(0xff333333),
-              shadowColor: Colors.black.withValues(alpha: 0.08),
-              elevation: 2,
-              padding: EdgeInsets.symmetric(
-                horizontal: value * 35,
-                vertical: value * 6,
-              ),
-              shape: RoundedRectangleBorder(
-                side: BorderSide(
-                  color: Color(0xffE8E8E8),
-                  width: value * 1,
+                    ),
+                    WidgetSpan(
+                      child: SizedBox(width: value * 12),
+                    ),
+                    TextSpan(
+                      text: userInfo?.email ?? 'No email',
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(52.r),
               ),
             ),
-            text: 'Edit',
-          )
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 }

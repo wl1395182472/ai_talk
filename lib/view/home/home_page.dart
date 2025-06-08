@@ -1,10 +1,10 @@
+import 'package:ai_talk/view/profile/profile_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show BuildContext, Scaffold, Widget;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../constant/image_path.dart';
 import '../explore/explore_page.dart';
-import '../profile/profile_page.dart';
 import '../recent/recent_page.dart';
 import '../role/role_page.dart';
 import 'widget/home_app_bar.dart';
@@ -48,6 +48,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   SafeArea(
                     bottom: false,
                     child: PageView(
+                      physics: const NeverScrollableScrollPhysics(),
                       controller: controller.pageController,
                       onPageChanged: controller.onPageChanged,
                       children: [

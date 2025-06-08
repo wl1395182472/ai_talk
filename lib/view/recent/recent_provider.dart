@@ -67,7 +67,7 @@ class RecentState {
 }
 
 class RecentNotifier extends StateNotifier<RecentState> {
-  RecentNotifier() : super(const RecentState()) {
+  RecentNotifier() : super(const RecentState(isLoading: true)) {
     loadRecentList();
   }
 

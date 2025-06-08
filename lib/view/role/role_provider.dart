@@ -45,7 +45,7 @@ class RoleState {
 }
 
 class RoleNotifier extends StateNotifier<RoleState> {
-  RoleNotifier() : super(const RoleState()) {
+  RoleNotifier() : super(const RoleState(isLoading: true)) {
     loadRoles();
   }
 

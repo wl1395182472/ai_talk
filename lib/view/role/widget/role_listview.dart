@@ -43,6 +43,20 @@ class _RoleListviewState extends ConsumerState<RoleListview> {
   Widget build(BuildContext context) {
     final roleState = ref.watch(roleProvider);
 
+    // 显示加载指示器当数据为空且正在加载时
+    if (roleState.rolesList.isEmpty && roleState.isLoading) {
+      return Expanded(
+        child: Align(
+          alignment: Alignment(0, -0.3),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).primaryColor,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Expanded(
       child: SmartRefresher(
         enablePullDown: true,
@@ -54,14 +68,17 @@ class _RoleListviewState extends ConsumerState<RoleListview> {
         child: ListView.builder(
           padding: EdgeInsets.only(
             top: 32.h,
-            left: 35.w,
-            right: 35.w,
             bottom: 210.h + MediaQuery.of(context).padding.bottom,
+            left: 20.w,
+            right: 20.w,
           ),
           itemCount: roleState.rolesList.length,
           itemBuilder: (context, index) {
             return RoleItem(
               character: roleState.rolesList[index],
+              onTap: () {
+                // TODO: 导航到角色聊天
+              },
             );
           },
         ),

@@ -1,82 +1,107 @@
 import 'dart:math';
 
+import 'package:ai_talk/component/global_button.dart';
+import 'package:ai_talk/component/global_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../component/global_button.dart';
-import '../../../component/global_text.dart';
 import '../../../constant/image_path.dart';
-import '../profile_provider.dart';
 
-class ProfileMember extends ConsumerWidget {
-  const ProfileMember({super.key});
+class ProfileMember extends StatelessWidget {
+  final VoidCallback onClickReCharge;
+
+  const ProfileMember({
+    super.key,
+    required this.onClickReCharge,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(profileProvider.notifier);
+  Widget build(BuildContext context) {
     final value = min(1.w, 1.h);
 
     return Container(
       width: double.infinity,
-      height: 247.h,
-      margin: EdgeInsets.symmetric(
-        vertical: 23.h,
-        horizontal: value * 23,
-      ),
-      padding: EdgeInsets.only(
-        left: value * 80,
-        right: value * 80,
-        bottom: value * 40,
-      ),
+      height: value * 294,
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('${ImagePath.instance.global}member.png'),
-          fit: BoxFit.fill,
+          image: AssetImage(
+            '${ImagePath.instance.profile}member.png',
+          ),
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+          Container(
+            height: value * 207,
+            padding: EdgeInsets.symmetric(horizontal: value * 58),
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: GlobalText(
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GlobalText(
                         'Get Pro+',
-                        color: Colors.white,
-                        fontSize: value * 52,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 52.sp,
                         height: 73 / 52,
-                        letterSpacing: value * 1.0,
+                        letterSpacing: value * 0.58,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: GlobalText(
+                      GlobalText(
                         'Get more privilege',
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: value * 35,
-                        fontWeight: FontWeight.w400,
+                        fontSize: 35.sp,
                         height: 48 / 35,
-                        letterSpacing: value * 1.0,
+                        letterSpacing: value * 0.58,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+                GlobalButton(
+                  onPressed: onClickReCharge,
+                  text: 'Recharge',
+                )
+              ],
+            ),
+          ),
+          Container(
+            height: value * 87,
+            padding: EdgeInsets.only(
+              left: value * 35,
+              right: value * 55,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GlobalText(
+                    'Share to get more free token',
+                    color: Theme.of(context).primaryColor,
+                    fontSize: value * 35,
+                    fontWeight: FontWeight.w500,
+                    height: 48 / 35,
+                    letterSpacing: value * 0.58,
+                  ),
+                ),
+                Image.asset(
+                  '${ImagePath.instance.global}gem.png',
+                  width: value * 46,
+                  height: value * 46,
+                ),
+                SizedBox(width: value * 12),
+                GlobalText(
+                  'Share',
+                  color: Theme.of(context).primaryColor,
+                  fontSize: value * 35,
+                  fontWeight: FontWeight.w500,
+                  height: 48 / 35,
+                  letterSpacing: value * 0.58,
                 ),
               ],
             ),
           ),
-          GlobalButton(
-            onPressed: controller.onClickReCharge,
-            height: 92.h,
-            text: 'ReCharge',
-          )
         ],
       ),
     );

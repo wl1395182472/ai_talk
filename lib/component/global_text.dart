@@ -7,7 +7,8 @@ import 'package:flutter/material.dart'
         BuildContext,
         Widget,
         TextStyle,
-        Text;
+        Text,
+        TextOverflow;
 
 /// 全局文本组件
 ///
@@ -96,6 +97,8 @@ class GlobalText extends StatelessWidget {
       text, // 显示的文本内容
       maxLines: maxLines, // 设置最大行数
       textAlign: textAlign, // 设置文本对齐方式
+      softWrap: false,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
         // 设置字体族，如果未指定则使用默认的 'Urbanist' 字体
         fontFamily: fontFamily ?? 'Urbanist',

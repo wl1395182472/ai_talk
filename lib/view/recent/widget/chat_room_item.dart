@@ -5,22 +5,22 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../component/global_text.dart';
 import '../../../component/url_image.dart';
-import '../../../constant/image_path.dart';
-import '../../../model/character.dart';
+import '../../../model/group_list_item.dart';
 
-class RoleItem extends StatelessWidget {
-  final Character character;
+class ChatRoomItem extends StatelessWidget {
+  final GroupListItem chatRoom;
   final VoidCallback? onTap;
 
-  const RoleItem({
+  const ChatRoomItem({
     super.key,
-    required this.character,
+    required this.chatRoom,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final scale = min(1.w, 1.h);
+    final avatarSize = scale * 150;
 
     return Material(
       color: Colors.transparent,
@@ -38,8 +38,8 @@ class RoleItem extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                width: scale * 150,
-                height: scale * 150,
+                width: avatarSize,
+                height: avatarSize,
                 clipBehavior: Clip.hardEdge,
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -59,17 +59,16 @@ class RoleItem extends StatelessWidget {
                     ),
                   ),
                   child: UrlImage(
-                    url: character.avatar,
-                    width: scale * 150,
-                    height: scale * 150,
+                    url: chatRoom.cover,
+                    width: avatarSize,
+                    height: avatarSize,
                     errorWidget: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Color(0xfff5f5f5),
                       ),
                       child: Icon(
-                        Icons.person,
-                        size: scale * 80,
+                        Icons.chat_bubble_outline,
                         color: Color(0xffcccccc),
                       ),
                     ),
@@ -82,15 +81,15 @@ class RoleItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GlobalText(
-                      character.name,
+                      chatRoom.title,
                       fontSize: 46.sp,
                       height: 65 / 46,
                       fontWeight: FontWeight.w600,
                     ),
                     GlobalText(
-                      character.shortDescription,
+                      '点击进入聊天室',
                       maxLines: 1,
-                      color: Color(0xff333333).withValues(alpha: 0.8),
+                      color: const Color(0xff333333).withValues(alpha: 0.8),
                       fontSize: 40.sp,
                       height: 56 / 40,
                       fontWeight: FontWeight.w400,
@@ -98,18 +97,6 @@ class RoleItem extends StatelessWidget {
                   ],
                 ),
               ),
-              Container(
-                padding: EdgeInsets.all(scale * 10),
-                decoration: BoxDecoration(
-                  color: Colors.black38,
-                  borderRadius: BorderRadius.circular(100.0),
-                ),
-                child: Image.asset(
-                  '${ImagePath.instance.global}collect.png',
-                  width: scale * 50,
-                  height: scale * 50,
-                ),
-              )
             ],
           ),
         ),

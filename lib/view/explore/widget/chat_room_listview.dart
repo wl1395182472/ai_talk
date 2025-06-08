@@ -48,6 +48,20 @@ class _ChatRoomListviewState extends ConsumerState<ChatRoomListview> {
     final chatRoomList = chatRoomState.chatRoomList;
     final value = min(1.w, 1.h);
 
+    // 显示加载指示器当数据为空且正在加载时
+    if (chatRoomList.isEmpty && chatRoomState.isLoading) {
+      return Expanded(
+        child: Align(
+          alignment: Alignment(0, -0.3),
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).primaryColor,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Expanded(
       child: SmartRefresher(
         enablePullDown: true,
