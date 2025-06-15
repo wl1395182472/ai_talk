@@ -496,4 +496,371 @@ class GroupApiService {
       throw Exception('举报群聊失败: $e');
     }
   }
+
+  /// 获取最近的用户列表
+  Future<ApiResponse<List<GroupListItem>>> fetchRecentList({
+    required String category,
+    int? limit,
+    int? pageNumber,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/group/user/list',
+        data: {
+          'user_id': UserService.instance.userId,
+          'category': category,
+          if (limit != null) 'limit': limit,
+          if (pageNumber != null) 'page_no': pageNumber,
+        },
+        fromJsonT: (data) {
+          if (data is List) {
+            return data
+                .map((e) => GroupListItem.fromJson(e as Map<String, dynamic>))
+                .toList();
+          } else {
+            Log.instance.logger.w('获取最近用户列表返回的数据格式不正确: [${data.runtimeType}]');
+            return <GroupListItem>[];
+          }
+        },
+      );
+
+      return ApiResponse<List<GroupListItem>>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as List<GroupListItem>?,
+      );
+    } catch (e) {
+      throw Exception('获取最近用户列表失败: $e');
+    }
+  }
+
+  /// 群聊制作
+  Future<ApiResponse<Map<String, dynamic>>> groupCraft({
+    int? groupId,
+    required String title,
+    String? cover,
+    String? background,
+    required String scenario,
+    required List<int> characterIds,
+    required List<Map<String, dynamic>> relationship,
+    List<Map<String, dynamic>>? greetings,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/group/craft',
+        data: {
+          'user_id': UserService.instance.userId,
+          if (groupId != null) 'group_id': groupId,
+          'title': title,
+          if (cover != null) 'cover': cover,
+          if (background != null) 'background': background,
+          'scenario': scenario,
+          'character_ids': characterIds,
+          'relationship': relationship,
+          if (greetings != null) 'greetings': greetings,
+        },
+      );
+
+      return ApiResponse<Map<String, dynamic>>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as Map<String, dynamic>?,
+      );
+    } catch (e) {
+      throw Exception('群聊制作失败: $e');
+    }
+  }
+
+  /// 会话打开
+  Future<ApiResponse<GroupSession>> sessionOpen({
+    required int groupId,
+    int? sessionId,
+    int? page,
+    int? limit,
+    required bool isCreate,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/group/session/open',
+        data: {
+          'user_id': UserService.instance.userId,
+          'group_id': groupId,
+          if (sessionId != null) 'session_id': sessionId,
+          if (page != null) 'page': page,
+          if (limit != null) 'limit': limit,
+          'to_create': isCreate ? 1 : 0,
+        },
+        fromJsonT: (data) => GroupSession.fromJson(data),
+      );
+
+      return ApiResponse<GroupSession>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as GroupSession?,
+      );
+    } catch (e) {
+      throw Exception('打开会话失败: $e');
+    }
+  }
+
+  /// 会话更新
+  Future<ApiResponse<void>> sessionUpdate({
+    int? sessionId,
+    int? personalId,
+    Map<String, dynamic>? extion,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/group/session/update',
+        data: {
+          'user_id': UserService.instance.userId,
+          if (sessionId != null) 'session_id': sessionId,
+          if (personalId != null) 'personal_id': personalId,
+          if (extion != null) 'extion': extion,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('更新会话失败: $e');
+    }
+  }
+
+  /// 群聊生成 SSE
+  Stream<Map<String, dynamic>> groupGenerateSse({
+    required int sessionId,
+    int? uniqueId,
+    String? speaker,
+    int? batchSize,
+  }) {
+    try {
+      return _httpService.connectSSE(
+        '/character/group/generate/sse',
+        queryParameters: {
+          'user_id': UserService.instance.userId,
+          'session_id': sessionId.toString(),
+          if (uniqueId != null) 'unique_id': uniqueId.toString(),
+          if (speaker != null) 'speaker': speaker,
+          if (batchSize != null) 'batch_size': batchSize.toString(),
+        },
+      ).cast<Map<String, dynamic>>();
+    } catch (e) {
+      throw Exception('群聊生成SSE失败: $e');
+    }
+  }
+
+  /// 用户提交
+  Future<ApiResponse<void>> userCommit({
+    required int sessionId,
+    String? content,
+    int? uniqId,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/group/user/commit',
+        data: {
+          'user_id': UserService.instance.userId,
+          'session_id': sessionId,
+          if (content != null) 'content': content,
+          if (uniqId != null) 'uniq_id': uniqId,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('用户提交失败: $e');
+    }
+  }
+
+  /// 重新生成 SSE
+  Stream<Map<String, dynamic>> regenerateSse({
+    required int sessionId,
+    int? uniqueId,
+    int? replyId,
+  }) {
+    try {
+      return _httpService.connectSSE(
+        '/character/group/regenerate/sse',
+        queryParameters: {
+          'user_id': UserService.instance.userId,
+          'session_id': sessionId.toString(),
+          if (uniqueId != null) 'unique_id': uniqueId.toString(),
+          if (replyId != null) 'reply_id': replyId.toString(),
+        },
+      ).cast<Map<String, dynamic>>();
+    } catch (e) {
+      throw Exception('重新生成SSE失败: $e');
+    }
+  }
+
+  /// 获取记忆列表
+  Future<ApiResponse<List<Map<String, dynamic>>>> retrieveMemoryList({
+    int? maxItems,
+    int? currentPage,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/memory/list',
+        data: {
+          'user_id': UserService.instance.userId,
+          if (maxItems != null) 'limit': maxItems,
+          if (currentPage != null) 'page_no': currentPage,
+        },
+        fromJsonT: (data) {
+          if (data is List) {
+            return data.cast<Map<String, dynamic>>();
+          } else {
+            Log.instance.logger.w('获取记忆列表返回的数据格式不正确: [${data.runtimeType}]');
+            return <Map<String, dynamic>>[];
+          }
+        },
+      );
+
+      return ApiResponse<List<Map<String, dynamic>>>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as List<Map<String, dynamic>>?,
+      );
+    } catch (e) {
+      throw Exception('获取记忆列表失败: $e');
+    }
+  }
+}
+
+class GroupRelationship {
+  final String character1;
+  final String character2;
+  final String relationship;
+
+  const GroupRelationship({
+    required this.character1,
+    required this.character2,
+    required this.relationship,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'character1': character1,
+      'character2': character2,
+      'relationship': relationship,
+    };
+  }
+
+  factory GroupRelationship.fromJson(Map<String, dynamic> json) {
+    return GroupRelationship(
+      character1: json['character1'] as String,
+      character2: json['character2'] as String,
+      relationship: json['relationship'] as String,
+    );
+  }
+}
+
+class GroupGreeting {
+  final String speaker;
+  final String content;
+
+  const GroupGreeting({
+    required this.speaker,
+    required this.content,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'speaker': speaker,
+      'content': content,
+    };
+  }
+
+  factory GroupGreeting.fromJson(Map<String, dynamic> json) {
+    return GroupGreeting(
+      speaker: json['speaker'] as String,
+      content: json['content'] as String,
+    );
+  }
+}
+
+class GroupUserCommitResponse {
+  final bool success;
+  final String? message;
+
+  const GroupUserCommitResponse({
+    required this.success,
+    this.message,
+  });
+
+  factory GroupUserCommitResponse.fromJson(Map<String, dynamic> json) {
+    return GroupUserCommitResponse(
+      success: json['success'] as bool? ?? false,
+      message: json['message'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      if (message != null) 'message': message,
+    };
+  }
+}
+
+class GroupGenerateResponse {
+  final String type;
+  final String? content;
+  final String? speaker;
+  final int? uniqId;
+
+  const GroupGenerateResponse({
+    required this.type,
+    this.content,
+    this.speaker,
+    this.uniqId,
+  });
+
+  factory GroupGenerateResponse.fromJson(Map<String, dynamic> json) {
+    return GroupGenerateResponse(
+      type: json['type'] as String,
+      content: json['content'] as String?,
+      speaker: json['speaker'] as String?,
+      uniqId: json['uniq_id'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      if (content != null) 'content': content,
+      if (speaker != null) 'speaker': speaker,
+      if (uniqId != null) 'uniq_id': uniqId,
+    };
+  }
+}
+
+class GroupMigrateResponse {
+  final int sessionId;
+  final String status;
+
+  const GroupMigrateResponse({
+    required this.sessionId,
+    required this.status,
+  });
+
+  factory GroupMigrateResponse.fromJson(Map<String, dynamic> json) {
+    return GroupMigrateResponse(
+      sessionId: json['session_id'] as int,
+      status: json['status'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'session_id': sessionId,
+      'status': status,
+    };
+  }
 }

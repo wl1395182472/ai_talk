@@ -1,113 +1,198 @@
-import 'package:flutter/material.dart'
-    show
-        StatelessWidget,
-        BuildContext,
-        Widget,
-        Center,
-        SizedBox,
-        Divider,
-        Spacer,
-        AppBar,
-        CircularProgressIndicator,
-        ListTile,
-        MainAxisSize,
-        Hero,
-        Column,
-        SafeArea,
-        Scaffold;
-import 'package:flutter_riverpod/flutter_riverpod.dart' show Consumer;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'
+    show ConsumerState, ConsumerStatefulWidget;
 
-import '../../component/global_button.dart' show GlobalButton;
-import '../../component/global_text.dart' show GlobalText;
-import '../../model/product.dart' show Product;
+import 'widget/payment_background.dart';
+import 'widget/payment_appbar.dart';
+import 'widget/payment_switch.dart';
+import 'widget/payment_product.dart';
+import 'widget/payment_button.dart';
+import 'widget/payment_privacy.dart';
+
 import 'purchase_provider.dart' show purchaseProvider;
+import 'package:in_app_purchase/in_app_purchase.dart';
 
-/// 购买页面组件
-///
-/// 展示应用内购买商品并处理购买流程：
-/// - 显示订阅型商品列表
-/// - 显示消耗型商品列表
-/// - 处理商品选择
-/// - 执行购买操作
-class PurchasePage extends StatelessWidget {
+import '../../model/product.dart' show Product;
+
+class PurchasePage extends ConsumerStatefulWidget {
   const PurchasePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // 使用Consumer监听购买状态变化
-    return Consumer(builder: (context, ref, _) {
-      // 获取购买状态和控制器
-      final state = ref.watch(purchaseProvider);
-      final notifier = ref.read(purchaseProvider.notifier);
+  ConsumerState<PurchasePage> createState() => _PurchasePageState();
+}
 
-      return Scaffold(
-        // 页面顶部标题栏
-        appBar: AppBar(title: const GlobalText('购买页面')),
-        body: SafeArea(
-          child: state.isLoading
-              // 加载状态显示进度指示器
-              ? const Center(child: CircularProgressIndicator())
-              : Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    // 订阅型商品标题
-                    const GlobalText(
-                      '订阅产品',
-                      fontSize: 18,
-                    ),
-                    // 订阅型商品列表
-                    ...state.subscriptionProducts.map(
-                      (product) => ListTile(
-                        title: GlobalText(product.title),
-                        subtitle: GlobalText(product.description),
-                        trailing: GlobalText(product.price),
-                        onTap: () {
-                          // 将ProductDetails转换为Product并设置为选中
-                          final selected = Product.fromProductDetails(product);
-                          if (selected != null) {
-                            notifier.setSelectedProduct(selected);
-                          }
-                        },
-                      ),
-                    ),
-                    const Divider(),
-                    // 消耗型商品标题
-                    const GlobalText(
-                      '消耗型产品',
-                      fontSize: 18,
-                    ),
-                    // 消耗型商品列表
-                    ...state.consumableProducts.map(
-                      (product) => ListTile(
-                        title: GlobalText(product.title),
-                        subtitle: GlobalText(product.description),
-                        trailing: GlobalText(product.price),
-                        onTap: () {
-                          // 将ProductDetails转换为Product并设置为选中
-                          final selected = Product.fromProductDetails(product);
-                          if (selected != null) {
-                            notifier.setSelectedProduct(selected);
-                          }
-                        },
-                      ),
-                    ),
-                    const Spacer(),
-                    // 购买按钮，带Hero动画效果
-                    Hero(
-                      tag: 'Purchase',
-                      child: GlobalButton(
-                        // 只有选择了商品才能点击购买
-                        onPressed: state.selectedProduct == null
-                            ? null
-                            : () => notifier.purchaseProduct(),
-                        mainAxisSize: MainAxisSize.max,
-                        text: 'Purchase',
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      );
+class _PurchasePageState extends ConsumerState<PurchasePage> {
+  bool isConsumable = false;
+  int consumableIndex = 0;
+  int nonConsumableIndex = 0;
+  bool isProPlus = true;
+  int currentImageIndex =
+      0; // Added to track current image index for background
+
+  @override
+  void initState() {
+    super.initState();
+    // It's good practice to trigger data loading for providers if not already handled by autoDispose/family.
+    // However, PurchaseNotifier already loads products and images in its constructor/init.
+  }
+
+  void onIndexChanged(int index) {
+    setState(() {
+      // currentImage = 'new_image_path_$index.png'; // This will be handled by the image list from provider
+      currentImageIndex = index;
     });
+  }
+
+  void onIsYearChanged() {
+    setState(() {
+      isProPlus = !isProPlus;
+    });
+  }
+
+  void onChangedConsumable(int index) {
+    setState(() {
+      consumableIndex = index;
+    });
+  }
+
+  void onChangedNonConsumable(int index) {
+    setState(() {
+      nonConsumableIndex = index;
+    });
+  }
+
+  void onClickRestore() {
+    ref.read(purchaseProvider.notifier).restorePurchase();
+  }
+
+  void onClickChangeIsConsumable(bool value) {
+    if (isConsumable != value) {
+      setState(() {
+        isConsumable = value;
+      });
+    }
+  }
+
+  void _handlePurchase() {
+    final provider = ref.read(purchaseProvider.notifier);
+    List<ProductDetails> productsToConsider = isConsumable
+        ? ref.read(purchaseProvider).consumableProducts
+        : ref.read(purchaseProvider).subscriptionProducts;
+
+    int currentIndex = isConsumable ? consumableIndex : nonConsumableIndex;
+
+    if (currentIndex < productsToConsider.length) {
+      final productDetails = productsToConsider[currentIndex];
+      final Product? productToPurchase =
+          Product.fromProductDetails(productDetails);
+      if (productToPurchase != null) {
+        provider.setSelectedProduct(productToPurchase);
+        provider.purchaseProduct();
+      } else {}
+    } else {}
+  }
+
+  ConsumableProduct _toConsumableProductForUI(ProductDetails pd) {
+    return ConsumableProduct(
+      id: pd.id,
+      title: pd.title,
+      description: pd.description,
+      price: pd.price,
+      rawPrice: pd.rawPrice,
+      currencyCode: pd.currencyCode,
+      currencySymbol: pd.currencySymbol,
+      tokenAmount: 100, // Example
+    );
+  }
+
+  NonConsumableProduct _toNonConsumableProductForUI(ProductDetails pd) {
+    // Assuming default values or logic to determine planType and userCurrentLevel
+    return NonConsumableProduct(
+      id: pd.id,
+      title: pd.title,
+      description: pd.description,
+      price: pd.price,
+      rawPrice: pd.rawPrice,
+      currencyCode: pd.currencyCode,
+      currencySymbol: pd.currencySymbol,
+      planType: "monthly", // Placeholder
+      userCurrentLevel: 1, // Placeholder
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final providerState = ref.watch(purchaseProvider);
+    final paymentImages = providerState.paymentImages;
+
+    final List<ConsumableProduct> consumableProductListForUI = providerState
+        .consumableProducts
+        .map(_toConsumableProductForUI)
+        .toList();
+    final List<NonConsumableProduct> nonConsumableProductListForUI =
+        providerState.subscriptionProducts
+            .map(_toNonConsumableProductForUI)
+            .toList();
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Background image display
+          PaymentBackground(
+            imageUrls: paymentImages, // Pass images from provider
+            onIndexChanged: onIndexChanged,
+            isConsumable: isConsumable,
+            consumableIndex: consumableIndex,
+            nonConsumableIndex: nonConsumableIndex,
+            isProPlus: isProPlus,
+            isLoadingProducts: providerState.isLoading,
+            onClickChangeIsConsumable: onClickChangeIsConsumable,
+          ),
+          // Main content area
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top,
+              bottom: MediaQuery.of(context).padding.bottom,
+            ),
+            child: Column(
+              children: [
+                PaymentAppBar(
+                  isConsumable: isConsumable,
+                  consumableIndex: consumableIndex,
+                  nonConsumableIndex: nonConsumableIndex,
+                  isProPlus: isProPlus,
+                  onClickRestore: onClickRestore,
+                ),
+                PaymentSwitch(
+                  isConsumable: isConsumable,
+                  isProPlus: isProPlus,
+                  onIsYearChanged: onIsYearChanged,
+                ),
+                const Spacer(),
+                PaymentProduct(
+                  isProPlus: isProPlus,
+                  isLoadingProducts: providerState.isLoading,
+                  isConsumable: isConsumable,
+                  consumableIndex: consumableIndex,
+                  nonConsumableIndex: nonConsumableIndex,
+                  consumableProductList: consumableProductListForUI,
+                  nonConsumableProductList: nonConsumableProductListForUI,
+                  onChangedConsumable: onChangedConsumable,
+                  onChangedNonconsumable: onChangedNonConsumable,
+                ),
+                PaymentButton(
+                  isConsumable: isConsumable,
+                  isLoadingProducts: providerState.isLoading,
+                  onClickPurchase: _handlePurchase,
+                ),
+                const PaymentPrivacy(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

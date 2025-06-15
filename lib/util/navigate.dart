@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart'
     show GoRouter, GoRoute, CustomTransitionPage;
 
+import '../model/chat_room.dart';
+import '../model/character.dart';
 import '../view/home/home_page.dart' show HomePage;
 import '../view/login/login_page.dart';
 import '../view/not_found/not_found_page.dart' show NotFoundPage;
 import '../view/purchase/purchase_page.dart' show PurchasePage;
 import '../view/splash/splash_page.dart' show SplashPage;
+import '../view/chat_room/chat_room_page.dart' show ChatRoomPage;
+import '../view/chat/chat_page.dart' show ChatPage;
 
 /// 路由导航工具类
 ///
@@ -48,6 +52,12 @@ class Navigate {
   /// 购买页路径
   static const String purchase = '/purchase';
 
+  /// 聊天室页面路径
+  static const String chatRoom = '/chat_room';
+
+  /// 聊天页面路径
+  static const String chat = '/chat';
+
   // GoRouter 路由实例配置
   late final router = GoRouter(
     // 设置应用启动时的初始路由
@@ -88,6 +98,32 @@ class Navigate {
         path: purchase,
         name: 'purchase',
         builder: (context, state) => const PurchasePage(),
+      ),
+      // 聊天室路由
+      GoRoute(
+        path: '$chatRoom/:groupId',
+        name: 'chatRoom',
+        builder: (context, state) {
+          ChatRoom? chatRoom;
+          final chatRoomData = state.extra;
+          if (chatRoomData is ChatRoom) {
+            chatRoom = chatRoomData;
+          }
+          return ChatRoomPage(chatRoom: chatRoom);
+        },
+      ),
+      // 聊天页路由
+      GoRoute(
+        path: chat,
+        name: 'chat',
+        builder: (context, state) {
+          Character? character;
+          final characterData = state.extra;
+          if (characterData is Character) {
+            character = characterData;
+          }
+          return ChatPage(character: character);
+        },
       ),
     ],
 

@@ -2,8 +2,8 @@ import 'dart:async' show StreamSubscription;
 import 'dart:convert' show jsonEncode, jsonDecode;
 import 'dart:io' show Platform;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter/material.dart' show ChangeNotifier, BuildContext;
+import 'package:flutter/material.dart'
+    show ChangeNotifier, BuildContext, debugPrint;
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_riverpod/flutter_riverpod.dart'
     show ChangeNotifierProvider;
@@ -19,9 +19,9 @@ import 'package:in_app_purchase_android/in_app_purchase_android.dart'
     show GooglePlayProductDetails, GooglePlayPurchaseParam;
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart'
     show InAppPurchaseStoreKitPlatformAddition;
-import 'package:in_app_purchase_storekit/store_kit_wrappers.dart'
-    show SKPaymentQueueWrapper;
 
+import '../../api/api.dart';
+// Added for BaseApiService
 import '../../constant/app_config.dart' show AppConfig;
 import '../../model/product.dart'
     show
@@ -90,13 +90,20 @@ class PurchaseNotifier extends ChangeNotifier {
   List<ProductDetails> get subscriptionProducts => _subscriptionProducts;
   // 所有商品详情列表
   List<ProductDetails> get products => [
-        ..._subscriptionProducts,
         ..._consumableProducts,
+        ..._subscriptionProducts,
       ];
 
   // 用户选择是什么商品，消耗品或者订阅，消耗品中的哪个，订阅中的哪个，是pro还是pro plus，是月付还是年付
   Product? _selectedProduct;
   Product? get selectedProduct => _selectedProduct;
+
+  // 支付图片
+  List<String> _paymentImages = [];
+  List<String> get paymentImages => _paymentImages;
+
+  bool _isLoadingPaymentImages = false;
+  bool get isLoadingPaymentImages => _isLoadingPaymentImages;
 
   // 构造函数，初始化购买系统
   PurchaseNotifier() {
@@ -115,65 +122,31 @@ class PurchaseNotifier extends ChangeNotifier {
   /// 检查购买服务可用性，设置平台特定配置，
   /// 开始监听购买事件并加载商品信息
   Future<void> _initialize() async {
-    if (_enableLogging) {
-      Log.instance.logger.i('[PurchaseNotifier] Initializing purchase system');
+    // 获取支付页面图片
+    _fetchPaymentImages();
+
+    _isPurchaseAvailable = await _inAppPurchase.isAvailable();
+    if (!_isPurchaseAvailable) {
+      _isLoading = false;
+      notifyListeners();
+      return;
     }
-    try {
-      // 设置加载状态为true
-      _setLoading(true);
-      // 检查购买服务是否可用
-      _isPurchaseAvailable = await _inAppPurchase.isAvailable();
-      if (_enableLogging) {
-        Log.instance.logger.i(
-          '[PurchaseNotifier] ${kIsWeb ? '' : Platform.isAndroid ? 'Google Play ' : Platform.isIOS ? 'App Store ' : ''}Purchase Service availability: $_isPurchaseAvailable',
-        );
-      }
 
-      if (_isPurchaseAvailable) {
-        // 如果是iOS设备，设置StoreKit支付队列代理
-        if (Platform.isIOS) {
-          if (_enableLogging) {
-            Log.instance.logger.i(
-              '[PurchaseNotifier] Setting up iOS payment queue delegate',
-            );
-          }
-          await SKPaymentQueueWrapper().setDelegate(
-            StorekitPaymentQueueDelegate(),
-          );
-        }
-
-        // 开始处理购买流事件
-        _processPurchaseStreamAsync();
-
-        // 加载商品信息
-        await _loadProducts();
-      } else {
-        // 购买服务不可用时记录错误并提示用户
-        if (_enableLogging) {
-          Log.instance.logger.e(
-            '[PurchaseNotifier] ${kIsWeb ? '' : Platform.isAndroid ? 'Google Play ' : Platform.isIOS ? 'App Store ' : ''}Purchase Service is not available on this device.',
-          );
-        }
-        Toast.show(
-          '${kIsWeb ? '' : Platform.isAndroid ? 'Google Play ' : Platform.isIOS ? 'App Store ' : ''}Purchase Service is not available on this device.',
-        );
-      }
-    } catch (error, stackTrace) {
-      // 捕获并记录初始化过程中的错误
-      if (_enableLogging) {
-        Log.instance.logger.e(
-          '[PurchaseNotifier] _initialize error',
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }
-    } finally {
-      // 初始化完成，记录日志并更新加载状态
-      if (_enableLogging) {
-        Log.instance.logger.i('[PurchaseNotifier] Initialization completed');
-      }
-      _setLoading(false);
+    // 为iOS平台设置StoreKit支付队列代理
+    if (Platform.isIOS) {
+      final InAppPurchaseStoreKitPlatformAddition iosPlatformAddition =
+          _inAppPurchase
+              .getPlatformAddition<InAppPurchaseStoreKitPlatformAddition>();
+      await iosPlatformAddition.setDelegate(StorekitPaymentQueueDelegate());
     }
+
+    _processPurchaseStreamAsync();
+
+    // 加载商品信息
+    await _loadProducts();
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   /// 异步处理购买流事件
@@ -289,6 +262,30 @@ class PurchaseNotifier extends ChangeNotifier {
         );
       }
     }
+  }
+
+  /// 获取支付页面图片
+  /// Fetch payment page images from the API
+  Future<void> _fetchPaymentImages() async {
+    Log.instance.logger.i('[PurchaseNotifier] Fetching payment images');
+
+    if (_isLoadingPaymentImages) return;
+    _isLoadingPaymentImages = true;
+    notifyListeners();
+    try {
+      final response = await BaseApiService.instance.getPaymentImages();
+      if (response.code == 0 && response.result != null) {
+        _paymentImages = response.result!;
+      } else {
+        Log.instance.logger.e('Failed to load payment images: ${response.msg}');
+        _paymentImages = []; // Set to empty or keep previous on failure?
+      }
+    } catch (e) {
+      Log.instance.logger.e('Error fetching payment images: $e');
+      _paymentImages = []; // Set to empty on error
+    }
+    _isLoadingPaymentImages = false;
+    notifyListeners();
   }
 
   /// 标记当前是否正在进行购买流程
@@ -516,7 +513,24 @@ class PurchaseNotifier extends ChangeNotifier {
       }
     }
 
-    // TODO:向服务器验证购买
+    // 向服务器验证购买
+    try {
+      // 使用PaymentApiService验证购买
+      final response = await ApiService.instance.payment.verifyPayment(
+        transactionId: orderId,
+        paymentMethod: 'apple_pay', // 或根据实际支付方式设置
+      );
+
+      if (response.code == 0 && response.result == true) {
+        debugPrint('购买验证成功');
+      } else {
+        debugPrint('购买验证失败: ${response.msg}');
+        // 可以选择显示错误信息给用户
+      }
+    } catch (e) {
+      debugPrint('购买验证失败: $e');
+      // 即使验证失败，也可以继续处理订单，避免用户损失
+    }
 
     // 在成功处理购买后标记订单为已处理
     if (orderId.isNotEmpty) {

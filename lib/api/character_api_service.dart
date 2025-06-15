@@ -1,5 +1,7 @@
 import '../model/api_response.dart';
-import '../model/character.dart';
+import '../model/character.dart' hide ChatMessage, ChatSession;
+import '../model/chat_message.dart';
+import '../model/chat_session.dart';
 import '../model/recent_chat_character.dart';
 import '../service/http_service.dart';
 import '../service/user_service.dart';
@@ -191,7 +193,7 @@ class CharacterApiService {
       return ApiResponse<List<Character>>(
         code: response.code,
         msg: response.msg,
-        result: response.result as List<Character>?,
+        result: response.result as List<Character>,
       );
     } catch (e) {
       throw Exception('根据标签获取角色失败: $e');
@@ -320,7 +322,7 @@ class CharacterApiService {
   }) {
     try {
       return _httpService.connectSSE(
-        '/character/chat/stream',
+        '/character/genChat/sse',
         queryParameters: {
           'user_id': UserService.instance.userId,
           'session_id': sessionId.toString(),
@@ -330,6 +332,315 @@ class CharacterApiService {
       );
     } catch (e) {
       throw Exception('发送聊天消息失败: $e');
+    }
+  }
+
+  /// 进行角色的高级搜索
+  Future<ApiResponse<List<Character>>> initiateRoleSearch({
+    required String searchIndex,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/search',
+        data: {
+          'user_id': UserService.instance.userId,
+          'search_index': searchIndex,
+        },
+        fromJsonT: (data) =>
+            (data as List).map((item) => Character.fromJson(item)).toList(),
+      );
+
+      return ApiResponse<List<Character>>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as List<Character>?,
+      );
+    } catch (e) {
+      throw Exception('角色搜索失败: $e');
+    }
+  }
+
+  /// 使用多个标签查找角色
+  Future<ApiResponse<List<Character>>> findRolesWithLabels({
+    required String searchIndex,
+    required List<String> selectedLabels,
+    required int pageSize,
+    required int currentPage,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/searchByTags',
+        data: {
+          'user_id': UserService.instance.userId,
+          'search_index': searchIndex,
+          'tags': selectedLabels,
+          'limit': pageSize,
+          'page_no': currentPage,
+        },
+        fromJsonT: (data) =>
+            (data as List).map((item) => Character.fromJson(item)).toList(),
+      );
+
+      return ApiResponse<List<Character>>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as List<Character>?,
+      );
+    } catch (e) {
+      throw Exception('多标签查找角色失败: $e');
+    }
+  }
+
+  /// 验证消息内容的合法性
+  Future<ApiResponse<bool>> validateMessageContent({
+    required String content,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/validateMessage',
+        data: {
+          'user_id': UserService.instance.userId,
+          'content': content,
+        },
+        fromJsonT: (data) => data as bool,
+      );
+
+      return ApiResponse<bool>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('验证消息内容失败: $e');
+    }
+  }
+
+  /// 续接现有的聊天会话
+  Future<ApiResponse<ChatSession>> resumeChatSession({
+    required int roleId,
+    required int sessionId,
+    required int pageSize,
+    required int currentPage,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/continueChat',
+        data: {
+          'user_id': UserService.instance.userId,
+          'character_id': roleId,
+          'session_id': sessionId,
+          'limit': pageSize,
+          'page_no': currentPage,
+        },
+        fromJsonT: (data) => ChatSession.fromJson(data),
+      );
+
+      return ApiResponse<ChatSession>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('续接聊天会话失败: $e');
+    }
+  }
+
+  /// 移除指定的聊天会话
+  Future<ApiResponse<void>> removeChatSession({
+    required int roleId,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/deleteChatSession',
+        data: {
+          'user_id': UserService.instance.userId,
+          'character_id': roleId,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('移除聊天会话失败: $e');
+    }
+  }
+
+  /// 启动一个新的聊天会话
+  Future<ApiResponse<ChatSession>> startNewChat({
+    required int roleId,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/createChat',
+        data: {
+          'user_id': UserService.instance.userId,
+          'character_id': roleId,
+        },
+        fromJsonT: (data) => ChatSession.fromJson(data),
+      );
+
+      return ApiResponse<ChatSession>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('启动新聊天会话失败: $e');
+    }
+  }
+
+  /// 生成聊天消息
+  Stream<dynamic> generateMessages({
+    required int messageCount,
+    required String roleName,
+    required String greetingMessage,
+    required String detailedDescription,
+    required List<String> labels,
+    required List<Map<String, dynamic>> contextualInfo,
+    required Map<String, dynamic> additionalParams,
+  }) {
+    try {
+      return _httpService.connectSSE(
+        '/character/generateMessages',
+        queryParameters: {
+          'user_id': UserService.instance.userId,
+          'count': messageCount.toString(),
+          'name': roleName,
+          'greeting': greetingMessage,
+          'long_description': detailedDescription,
+          'tags': labels.join(','),
+          'context': contextualInfo.toString(),
+          'params': additionalParams.toString(),
+        },
+      );
+    } catch (e) {
+      throw Exception('生成聊天消息失败: $e');
+    }
+  }
+
+  /// 生成用户对话内容
+  Stream<dynamic> generateUserDialogs({
+    required int dialogCount,
+    required String roleName,
+    required String greetingMessage,
+    required String detailedDescription,
+    required List<String> labels,
+    required List<Map<String, dynamic>> contextualInfo,
+    required Map<String, dynamic> additionalParams,
+  }) {
+    try {
+      return _httpService.connectSSE(
+        '/character/generateUserDialogs',
+        queryParameters: {
+          'user_id': UserService.instance.userId,
+          'count': dialogCount.toString(),
+          'name': roleName,
+          'greeting': greetingMessage,
+          'long_description': detailedDescription,
+          'tags': labels.join(','),
+          'context': contextualInfo.toString(),
+          'params': additionalParams.toString(),
+        },
+      );
+    } catch (e) {
+      throw Exception('生成用户对话内容失败: $e');
+    }
+  }
+
+  /// 获取角色示例数据
+  Future<ApiResponse<Character>> getCharacterSample({
+    required String gender,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/getSample',
+        data: {
+          'user_id': UserService.instance.userId,
+          'gender': gender,
+        },
+        fromJsonT: (data) => Character.fromJson(data),
+      );
+
+      return ApiResponse<Character>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('获取角色示例失败: $e');
+    }
+  }
+
+  /// 获取用户创建的角色列表
+  Future<ApiResponse<List<Character>>> fetchUserCreatedRoles({
+    int? pageSize,
+    int? currentPage,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/getUserCreated',
+        data: {
+          'user_id': UserService.instance.userId,
+          if (pageSize != null) 'limit': pageSize,
+          if (currentPage != null) 'page_no': currentPage,
+        },
+        fromJsonT: (data) =>
+            (data as List).map((item) => Character.fromJson(item)).toList(),
+      );
+
+      return ApiResponse<List<Character>>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as List<Character>?,
+      );
+    } catch (e) {
+      throw Exception('获取用户创建角色失败: $e');
+    }
+  }
+
+  /// 删除指定的角色
+  Future<ApiResponse<void>> removeCharacter({
+    required int roleId,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/delete',
+        data: {
+          'user_id': UserService.instance.userId,
+          'character_id': roleId,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('删除角色失败: $e');
+    }
+  }
+
+  /// 发布指定的角色
+  Future<ApiResponse<void>> publishCharacter({
+    required int roleId,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/character/publish',
+        data: {
+          'user_id': UserService.instance.userId,
+          'character_id': roleId,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('发布角色失败: $e');
     }
   }
 }

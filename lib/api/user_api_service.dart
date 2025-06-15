@@ -358,4 +358,522 @@ class UserApiService {
       throw Exception('邮箱登录失败: $e');
     }
   }
+
+  /// 游客登录
+  Future<ApiResponse<AuthResponse>> guestLogin({
+    required String deviceToken,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/guest_login',
+        data: {
+          'device_token': deviceToken,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('游客登录失败: $e');
+    }
+  }
+
+  /// 执行随机登录
+  Future<ApiResponse<AuthResponse>> executeRandomLogin({
+    required String deviceToken,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/random_login',
+        data: {
+          'device_token': deviceToken,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('随机登录失败: $e');
+    }
+  }
+
+  /// 关联用户邮箱
+  Future<ApiResponse<AuthResponse>> associateEmail({
+    required String deviceToken,
+    required String emailAddress,
+    required String accountPassword,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/associate_email',
+        data: {
+          'device_token': deviceToken,
+          'email': emailAddress,
+          'password': accountPassword,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('关联邮箱失败: $e');
+    }
+  }
+
+  /// 使用邮箱验证码登录
+  Future<ApiResponse<AuthResponse>> loginWithEmailCode({
+    required String email,
+    required String verificationCode,
+    required String clientToken,
+    required String inviteCode,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/email_code_login',
+        data: {
+          'email': email,
+          'verification_code': verificationCode,
+          'client_token': clientToken,
+          'invite_code': inviteCode,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('邮箱验证码登录失败: $e');
+    }
+  }
+
+  /// 发送邮箱验证码
+  Future<ApiResponse<void>> sendVerificationCode({
+    required String email,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/send_verification_code',
+        data: {
+          'email': email,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('发送验证码失败: $e');
+    }
+  }
+
+  /// 获取用户基本信息
+  Future<ApiResponse<User>> retrieveUserInfo() async {
+    try {
+      final response = await _httpService.post(
+        '/user/get_info',
+        data: {
+          'user_id': UserService.instance.userId,
+        },
+        fromJsonT: (data) => User.fromJson(data),
+      );
+
+      return ApiResponse<User>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('获取用户信息失败: $e');
+    }
+  }
+
+  /// 关联 Apple 账号
+  Future<ApiResponse<AuthResponse>> linkAppleAccount({
+    required String appleId,
+    required String identityToken,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/link_apple',
+        data: {
+          'user_id': UserService.instance.userId,
+          'apple_id': appleId,
+          'identity_token': identityToken,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('关联Apple账号失败: $e');
+    }
+  }
+
+  /// 通过 Apple 账号注册或登录
+  Future<ApiResponse<AuthResponse>> registOrLoginByApple({
+    required String appleId,
+    required String identityToken,
+    String? email,
+    String? username,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/apple_login',
+        data: {
+          'apple_id': appleId,
+          'identity_token': identityToken,
+          if (email != null) 'email': email,
+          if (username != null) 'username': username,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('Apple登录失败: $e');
+    }
+  }
+
+  /// 通过 Google 账号注册或登录（移动端专用）
+  Future<ApiResponse<AuthResponse>> mobileRegistOrLoginByGoogle({
+    required String googleId,
+    required String idToken,
+    String? email,
+    String? username,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/mobile_google_login',
+        data: {
+          'google_id': googleId,
+          'id_token': idToken,
+          if (email != null) 'email': email,
+          if (username != null) 'username': username,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('移动端Google登录失败: $e');
+    }
+  }
+
+  /// 通过 Google 账号注册或登录
+  Future<ApiResponse<AuthResponse>> registOrLoginByGoogle({
+    required String googleId,
+    required String idToken,
+    String? email,
+    String? username,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/google_login',
+        data: {
+          'google_id': googleId,
+          'id_token': idToken,
+          if (email != null) 'email': email,
+          if (username != null) 'username': username,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('Google登录失败: $e');
+    }
+  }
+
+  /// 关联 Google 账号
+  Future<ApiResponse<AuthResponse>> linkGoogleAccount({
+    required String googleId,
+    required String idToken,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/link_google',
+        data: {
+          'user_id': UserService.instance.userId,
+          'google_id': googleId,
+          'id_token': idToken,
+        },
+        fromJsonT: (data) => AuthResponse.fromJson(data),
+      );
+
+      return ApiResponse<AuthResponse>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result as AuthResponse?,
+      );
+    } catch (e) {
+      throw Exception('关联Google账号失败: $e');
+    }
+  }
+
+  /// 删除用户账户
+  Future<ApiResponse<void>> removeUserAccount() async {
+    try {
+      final response = await _httpService.post(
+        '/user/delete_account',
+        data: {
+          'user_id': UserService.instance.userId,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('删除用户账户失败: $e');
+    }
+  }
+
+  /// 获取用户代币余额
+  Future<ApiResponse<int>> fetchUserTokenBalance() async {
+    try {
+      final response = await _httpService.post(
+        '/user/get_token_balance',
+        data: {
+          'user_id': UserService.instance.userId,
+        },
+        fromJsonT: (data) => data as int,
+      );
+
+      return ApiResponse<int>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('获取代币余额失败: $e');
+    }
+  }
+
+  /// 获取免费次数
+  Future<ApiResponse<int>> getFreeTimes() async {
+    try {
+      final response = await _httpService.post(
+        '/user/get_free_times',
+        data: {
+          'user_id': UserService.instance.userId,
+        },
+        fromJsonT: (data) => data as int,
+      );
+
+      return ApiResponse<int>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('获取免费次数失败: $e');
+    }
+  }
+
+  /// 设置用户的 Adjust 相关信息
+  Future<ApiResponse<void>> configureAdjustInfo({
+    required Map<String, dynamic> adjustData,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/set_adjust_info',
+        data: {
+          'user_id': UserService.instance.userId,
+          ...adjustData,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('设置Adjust信息失败: $e');
+    }
+  }
+
+  /// 获取用户的 Adjust 相关信息
+  Future<ApiResponse<Map<String, dynamic>>> retrieveAdjustInfo() async {
+    try {
+      final response = await _httpService.post(
+        '/user/get_adjust_info',
+        data: {
+          'user_id': UserService.instance.userId,
+        },
+        fromJsonT: (data) => data as Map<String, dynamic>,
+      );
+
+      return ApiResponse<Map<String, dynamic>>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('获取Adjust信息失败: $e');
+    }
+  }
+
+  /// 获取 Adjust 状态
+  Future<ApiResponse<Map<String, dynamic>>> getAdjustState() async {
+    try {
+      final response = await _httpService.post(
+        '/user/get_adjust_state',
+        data: {
+          'user_id': UserService.instance.userId,
+        },
+        fromJsonT: (data) => data as Map<String, dynamic>,
+      );
+
+      return ApiResponse<Map<String, dynamic>>(
+        code: response.code,
+        msg: response.msg,
+        result: response.result,
+      );
+    } catch (e) {
+      throw Exception('获取Adjust状态失败: $e');
+    }
+  }
+
+  /// 设置用户标签
+  Future<ApiResponse<void>> setUserTags({
+    required List<String> tags,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/set_tags',
+        data: {
+          'user_id': UserService.instance.userId,
+          'tags': tags,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('设置用户标签失败: $e');
+    }
+  }
+
+  /// 设置用户名
+  Future<ApiResponse<void>> setUsername({
+    required String username,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/set_username',
+        data: {
+          'user_id': UserService.instance.userId,
+          'username': username,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('设置用户名失败: $e');
+    }
+  }
+
+  /// 设置头像
+  Future<ApiResponse<void>> setAvatar({
+    required String avatarUrl,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/set_avatar',
+        data: {
+          'user_id': UserService.instance.userId,
+          'avatar': avatarUrl,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('设置头像失败: $e');
+    }
+  }
+
+  /// 收藏角色
+  Future<ApiResponse<void>> favoriteCharacter({
+    required int characterId,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/favorite_character',
+        data: {
+          'user_id': UserService.instance.userId,
+          'character_id': characterId,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('收藏角色失败: $e');
+    }
+  }
+
+  /// 关注作者
+  Future<ApiResponse<void>> followAuthor({
+    required int authorId,
+  }) async {
+    try {
+      final response = await _httpService.post(
+        '/user/follow_author',
+        data: {
+          'user_id': UserService.instance.userId,
+          'author_id': authorId,
+        },
+      );
+
+      return ApiResponse<void>(
+        code: response.code,
+        msg: response.msg,
+      );
+    } catch (e) {
+      throw Exception('关注作者失败: $e');
+    }
+  }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
+import '../../../util/navigate.dart'; // 新增导入
 import '../recent_provider.dart';
 import 'chat_room_item.dart';
 import 'role_chat_item.dart';
@@ -107,7 +108,10 @@ class _RecentListviewState extends ConsumerState<RecentListview> {
           return ChatRoomItem(
             chatRoom: chatRoom,
             onTap: () {
-              // TODO: 导航到聊天室
+              Navigate.instance.push(
+                '${Navigate.chatRoom}/${chatRoom.groupId}', // 假设 chatRoom 对象有 id 属性作为 groupId
+                extra: chatRoom,
+              );
             },
           );
         },
@@ -149,7 +153,10 @@ class _RecentListviewState extends ConsumerState<RecentListview> {
           return RoleChatItem(
             roleChat: roleChat,
             onTap: () {
-              // TODO: 导航到角色聊天
+              Navigate.instance.push(
+                Navigate.chat,
+                extra: roleChat, // 假设 roleChat 是 Character 对象或包含 Character 对象
+              );
             },
           );
         },

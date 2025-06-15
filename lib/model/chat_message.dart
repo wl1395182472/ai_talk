@@ -38,14 +38,14 @@ class ChatMessage {
   /// 从JSON创建实例
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
-      id: json['id'] as int?,
-      sessionId: json['session_id'] as int?,
-      userId: json['user_id'] as int?,
-      characterId: json['character_id'] as int?,
-      content: json['content'] as String,
-      type: json['type'] as String,
-      createdAt: json['created_at'] as String?,
-      updatedAt: json['updated_at'] as String?,
+      id: json['id'] ?? 0,
+      sessionId: json['session_id'] ?? 0,
+      userId: json['user_id'] ?? 0,
+      characterId: json['character_id'] ?? 0,
+      content: json['content'] ?? '',
+      type: json['type'] ?? '',
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
     );
   }
 

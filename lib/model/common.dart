@@ -12,9 +12,9 @@ class UploadResponse {
 
   factory UploadResponse.fromJson(Map<String, dynamic> json) {
     return UploadResponse(
-      url: json['url'] as String,
-      filename: json['filename'] as String?,
-      size: json['size'] as int?,
+      url: json['url'] is String ? json['url'] : '',
+      filename: json['filename'] is String ? json['filename'] : null,
+      size: json['size'] is int ? json['size'] : null,
     );
   }
 
@@ -63,8 +63,10 @@ class TranslateResponse {
 
   factory TranslateResponse.fromJson(Map<String, dynamic> json) {
     return TranslateResponse(
-      translatedText: json['translated_text'] as String,
-      detectedLang: json['detected_lang'] as String?,
+      translatedText:
+          json['translated_text'] is String ? json['translated_text'] : '',
+      detectedLang:
+          json['detected_lang'] is String ? json['detected_lang'] : null,
     );
   }
 
@@ -180,9 +182,9 @@ class TaskResponse {
 
   factory TaskResponse.fromJson(Map<String, dynamic> json) {
     return TaskResponse(
-      status: json['status'] as String,
-      result: json['result'] as String?,
-      error: json['error'] as String?,
+      status: json['status'] is String ? json['status'] : '',
+      result: json['result'] is String ? json['result'] : null,
+      error: json['error'] is String ? json['error'] : null,
     );
   }
 

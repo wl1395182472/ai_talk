@@ -10,8 +10,8 @@ class CharacterTag {
 
   factory CharacterTag.fromJson(Map<String, dynamic> json) {
     return CharacterTag(
-      name: json['name'] as String,
-      description: json['description'] as String?,
+      name: json['name'] is String ? json['name'] : '',
+      description: json['description'] is String ? json['description'] : null,
     );
   }
 
@@ -39,10 +39,10 @@ class CharacterVoice {
 
   factory CharacterVoice.fromJson(Map<String, dynamic> json) {
     return CharacterVoice(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      language: json['language'] as String?,
-      gender: json['gender'] as String?,
+      id: json['id'] is String ? json['id'] : '',
+      name: json['name'] is String ? json['name'] : '',
+      language: json['language'] is String ? json['language'] : null,
+      gender: json['gender'] is String ? json['gender'] : null,
     );
   }
 
@@ -61,6 +61,7 @@ class Character {
   final int characterId;
   final String avatar;
   final String appearance;
+  final String background;
   final String name;
   final String greeting;
   final String longDescription;
@@ -78,6 +79,7 @@ class Character {
     this.characterId = 0,
     this.avatar = '',
     this.appearance = '',
+    this.background = '',
     required this.name,
     this.greeting = '',
     this.longDescription = '',
@@ -95,28 +97,37 @@ class Character {
   factory Character.fromJson(Map<String, dynamic> json) {
     final tag = json['tags'];
     return Character(
-      characterId: json['character_id'] ?? 0,
-      avatar: json['avatar'] ?? '',
-      appearance: json['appearance'] ?? '',
-      name: json['name'] ?? '',
-      greeting: json['greeting'] ?? '',
-      longDescription: json['long_description'] ?? '',
-      shortDescription: json['short_description'] ?? '',
+      characterId: json['character_id'] is int ? json['character_id'] : 0,
+      avatar: json['avatar'] is String ? json['avatar'] : '',
+      appearance: json['appearance'] is String ? json['appearance'] : '',
+      background: json['background'] is String ? json['background'] : '',
+      name: json['name'] is String ? json['name'] : '',
+      greeting: json['greeting'] is String ? json['greeting'] : '',
+      longDescription:
+          json['long_description'] is String ? json['long_description'] : '',
+      shortDescription:
+          json['short_description'] is String ? json['short_description'] : '',
       tags: tag is String
           ? tag.isNotEmpty
               ? tag.split(',')
               : []
-          : tag is List<String>
-              ? tag
+          : tag is List
+              ? List<String>.from(tag.map((item) => item is String ? item : ''))
               : [],
-      voice: json['voice'] ?? '',
-      context:
-          (json['context'] as List<dynamic>?)?.cast<Map<String, dynamic>>(),
-      params: json['params'] as Map<String, dynamic>?,
-      lang: json['lang'] as String?,
-      charge: json['charge'] as int,
-      sex: json['sex'] as String,
-      style: json['style'] as String?,
+      voice: json['voice'] is String ? json['voice'] : '',
+      context: json['context'] is List
+          ? List<Map<String, dynamic>>.from(
+              (json['context'] as List).map(
+                (item) =>
+                    item is Map<String, dynamic> ? item : <String, dynamic>{},
+              ),
+            )
+          : null,
+      params: json['params'] is Map<String, dynamic> ? json['params'] : null,
+      lang: json['lang'] is String ? json['lang'] : null,
+      charge: json['charge'] is int ? json['charge'] : 0,
+      sex: json['sex'] is String ? json['sex'] : '',
+      style: json['style'] is String ? json['style'] : null,
     );
   }
 
@@ -125,6 +136,7 @@ class Character {
       'character_id': characterId,
       'avatar': avatar,
       'appearance': appearance,
+      'background': background,
       'name': name,
       'greeting': greeting,
       'long_description': longDescription,
@@ -159,12 +171,14 @@ class ChatSession {
 
   factory ChatSession.fromJson(Map<String, dynamic> json) {
     return ChatSession(
-      sessionId: json['session_id'] as int,
-      characterId: json['character_id'] as int,
-      userId: json['user_id'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
+      sessionId: json['session_id'] is int ? json['session_id'] : 0,
+      characterId: json['character_id'] is int ? json['character_id'] : 0,
+      userId: json['user_id'] is int ? json['user_id'] : 0,
+      createdAt: json['created_at'] is String
+          ? (DateTime.tryParse(json['created_at']) ?? DateTime.now())
+          : DateTime.now(),
+      updatedAt: json['updated_at'] is String
+          ? DateTime.tryParse(json['updated_at'])
           : null,
     );
   }
@@ -202,13 +216,15 @@ class ChatMessage {
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
-      id: json['id'] as int?,
-      sessionId: json['session_id'] as int,
-      content: json['content'] as String,
-      role: json['role'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
-      audioUrl: json['audio_url'] as String?,
-      imageUrl: json['image_url'] as String?,
+      id: json['id'] is int ? json['id'] : null,
+      sessionId: json['session_id'] is int ? json['session_id'] : 0,
+      content: json['content'] is String ? json['content'] : '',
+      role: json['role'] is String ? json['role'] : '',
+      timestamp: json['timestamp'] is String
+          ? (DateTime.tryParse(json['timestamp']) ?? DateTime.now())
+          : DateTime.now(),
+      audioUrl: json['audio_url'] is String ? json['audio_url'] : null,
+      imageUrl: json['image_url'] is String ? json['image_url'] : null,
     );
   }
 

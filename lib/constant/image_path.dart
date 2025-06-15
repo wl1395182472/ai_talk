@@ -28,4 +28,6 @@ class ImagePath {
   final home = 'assets/image/home/';
 
   final profile = 'assets/image/profile/';
+
+  final chat = 'assets/image/chat/';
 }

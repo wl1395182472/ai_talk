@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
+import '../../../util/navigate.dart';
 import '../role_provider.dart';
 import 'role_item.dart';
 
@@ -77,7 +78,11 @@ class _RoleListviewState extends ConsumerState<RoleListview> {
             return RoleItem(
               character: roleState.rolesList[index],
               onTap: () {
-                // TODO: 导航到角色聊天
+                // 使用 go_router 导航到角色聊天
+                Navigate.instance.push(
+                  Navigate.chat,
+                  extra: roleState.rolesList[index],
+                );
               },
             );
           },

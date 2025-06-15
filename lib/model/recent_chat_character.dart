@@ -86,26 +86,31 @@ class RecentChatCharacter {
   /// 从JSON创建实例
   factory RecentChatCharacter.fromJson(Map<String, dynamic> json) {
     return RecentChatCharacter(
-      characterId: json['character_id'] as int,
-      sessionId: json['session_id'] as int,
-      name: json['name'] as String,
-      appearance: json['appearance'] as String,
-      avatar: json['avatar'] as String,
-      shortDescription: json['short_description'] as String,
-      background: json['background'] as String?,
-      createrId: json['creater_id'] as int,
-      creater: json['creater'] as String,
-      charge: json['charge'] as int,
-      isReleased: json['is_released'] as int,
-      visibleWeb: json['visible_web'] as int,
-      visibleApp: json['visible_app'] as int,
-      visibility: json['visibility'] as int,
-      guestVisibility: json['guest_visibility'] as int,
-      guestVisibilityApp: json['guest_visibility_app'] as int,
-      visibileBackground: json['visibile_background'] as int,
-      isCollect: json['is_collect'] as bool,
-      isPurchase: json['is_purchase'] as bool,
-      isStar: json['is_star'] as bool,
+      characterId: json['character_id'] is int ? json['character_id'] : 0,
+      sessionId: json['session_id'] is int ? json['session_id'] : 0,
+      name: json['name'] is String ? json['name'] : '',
+      appearance: json['appearance'] is String ? json['appearance'] : '',
+      avatar: json['avatar'] is String ? json['avatar'] : '',
+      shortDescription:
+          json['short_description'] is String ? json['short_description'] : '',
+      background: json['background'] is String ? json['background'] : null,
+      createrId: json['creater_id'] is int ? json['creater_id'] : 0,
+      creater: json['creater'] is String ? json['creater'] : '',
+      charge: json['charge'] is int ? json['charge'] : 0,
+      isReleased: json['is_released'] is int ? json['is_released'] : 0,
+      visibleWeb: json['visible_web'] is int ? json['visible_web'] : 0,
+      visibleApp: json['visible_app'] is int ? json['visible_app'] : 0,
+      visibility: json['visibility'] is int ? json['visibility'] : 0,
+      guestVisibility:
+          json['guest_visibility'] is int ? json['guest_visibility'] : 0,
+      guestVisibilityApp: json['guest_visibility_app'] is int
+          ? json['guest_visibility_app']
+          : 0,
+      visibileBackground:
+          json['visibile_background'] is int ? json['visibile_background'] : 0,
+      isCollect: json['is_collect'] is bool ? json['is_collect'] : false,
+      isPurchase: json['is_purchase'] is bool ? json['is_purchase'] : false,
+      isStar: json['is_star'] is bool ? json['is_star'] : false,
     );
   }
 

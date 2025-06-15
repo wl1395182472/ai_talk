@@ -185,17 +185,21 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   /// 刷新创建的角色列表
   Future<void> onRefreshCreatedCharacters() async {
     try {
-      // TODO: 调用API获取创建的角色列表
-      // final response = await ApiService.instance.character.getCreatedCharacters();
-      // if (response.code == 0) {
-      //   state = state.copyWith(createdCharacters: response.result ?? []);
-      // }
-
-      // 临时使用空列表
-      state = state.copyWith(createdCharacters: []);
+      // 调用API获取创建的角色列表
+      final response =
+          await ApiService.instance.character.fetchUserCreatedRoles(
+        currentPage: 1,
+      );
+      if (response.code == 0) {
+        state = state.copyWith(createdCharacters: response.result ?? []);
+      } else {
+        // API失败时使用空列表
+        state = state.copyWith(createdCharacters: []);
+      }
       state.createdRefreshController.refreshCompleted();
     } catch (e) {
       Log.instance.logger.e('Failed to refresh created characters', error: e);
+      state = state.copyWith(createdCharacters: []);
       state.createdRefreshController.refreshFailed();
     }
   }
@@ -203,16 +207,26 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   /// 加载更多创建的角色
   Future<void> onLoadMoreCreatedCharacters() async {
     try {
-      // TODO: 调用API获取更多创建的角色
-      // final response = await ApiService.instance.character.getCreatedCharacters(
-      //   page: (state.createdCharacters.length / 10).ceil() + 1,
-      // );
-      // if (response.code == 0) {
-      //   final newCharacters = [...state.createdCharacters, ...response.result ?? []];
-      //   state = state.copyWith(createdCharacters: newCharacters);
-      // }
+      // 调用API获取更多创建的角色
+      final currentPage = (state.createdCharacters.length / 10).ceil() + 1;
+      final response =
+          await ApiService.instance.character.fetchUserCreatedRoles(
+        currentPage: currentPage,
+      );
 
-      state.createdRefreshController.loadComplete();
+      if (response.code == 0 && response.result != null) {
+        final newCharacters = response.result!;
+        final allCharacters = [...state.createdCharacters, ...newCharacters];
+        state = state.copyWith(createdCharacters: allCharacters);
+
+        if (newCharacters.isEmpty) {
+          state.createdRefreshController.loadNoData();
+        } else {
+          state.createdRefreshController.loadComplete();
+        }
+      } else {
+        state.createdRefreshController.loadFailed();
+      }
     } catch (e) {
       Log.instance.logger.e('Failed to load more created characters', error: e);
       state.createdRefreshController.loadFailed();
@@ -222,7 +236,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   /// 刷新收藏的角色列表
   Future<void> onRefreshFavoriteCharacters() async {
     try {
-      // TODO: 调用API获取收藏的角色列表
+      // TODO: 需要实现获取收藏角色的API
+      // 暂时没有专门的收藏角色API，可以考虑使用角色搜索API
       // final response = await ApiService.instance.character.getFavoriteCharacters();
       // if (response.code == 0) {
       //   state = state.copyWith(favoriteCharacters: response.result ?? []);
@@ -240,7 +255,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   /// 加载更多收藏的角色
   Future<void> onLoadMoreFavoriteCharacters() async {
     try {
-      // TODO: 调用API获取更多收藏的角色
+      // TODO: 需要实现获取更多收藏角色的API
+      // 暂时没有专门的收藏角色API
       // final response = await ApiService.instance.character.getFavoriteCharacters(
       //   page: (state.favoriteCharacters.length / 10).ceil() + 1,
       // );

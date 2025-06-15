@@ -1,3 +1,5 @@
+import '../util/log.dart';
+
 /// 群聊信息
 class ChatRoom {
   final int groupId;
@@ -35,31 +37,47 @@ class ChatRoom {
   });
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
+    Log.instance.logger.d(json);
     final allCharacterIds = json['all_character_ids'];
     return ChatRoom(
-      groupId: json['group_id'] ?? 0,
-      title: json['title'] ?? '',
-      coverPrompt: json['cover_prompt'] ?? '',
-      cover: json['cover'] ?? '',
-      background: json['background'] ?? '',
-      scenario: json['scenario'],
-      characters: (json['characters'] as List<dynamic>?)
-              ?.map((e) => GroupCharacter.fromJson(e))
-              .toList() ??
-          [],
-      relationship: (json['relationship'] as List<dynamic>?)
-              ?.map((e) => GroupRelationship.fromJson(e))
-              .toList() ??
-          [],
-      greetings: (json['greetings'] as List<dynamic>?)
-              ?.map((e) => GroupGreeting.fromJson(e))
-              .toList() ??
-          [],
-      creater: json['creater'] ?? '',
-      createrId: json['creater_id'],
-      genCount: json['gen_count'],
-      isReleased: json['is_released'] == 1,
-      reviewLevel: json['review_level'] ?? 0,
+      groupId: json['group_id'] is int ? json['group_id'] : 0,
+      title: json['title'] is String ? json['title'] : '',
+      coverPrompt: json['cover_prompt'] is String ? json['cover_prompt'] : '',
+      cover: json['cover'] is String ? json['cover'] : '',
+      background: json['background'] is String ? json['background'] : '',
+      scenario: json['scenario'] is String ? json['scenario'] : '',
+      characters: (json['characters'] is List<dynamic>
+          ? (json['characters'] as List<dynamic>)
+              .map((e) => e is Map<String, dynamic>
+                  ? GroupCharacter.fromJson(e)
+                  : GroupCharacter(
+                      characterId: 0,
+                      name: '',
+                      avatar: '',
+                      charge: 0,
+                      isPurchase: false,
+                      needToPurchase: false))
+              .toList()
+          : <GroupCharacter>[]),
+      relationship: (json['relationship'] is List<dynamic>
+          ? (json['relationship'] as List<dynamic>)
+              .map((e) => e is Map<String, dynamic>
+                  ? GroupRelationship.fromJson(e)
+                  : GroupRelationship(char1Id: 0, char2Id: 0, detail: ''))
+              .toList()
+          : <GroupRelationship>[]),
+      greetings: (json['greetings'] is List<dynamic>
+          ? (json['greetings'] as List<dynamic>)
+              .map((e) => e is Map<String, dynamic>
+                  ? GroupGreeting.fromJson(e)
+                  : GroupGreeting(characterId: 0, greeting: ''))
+              .toList()
+          : <GroupGreeting>[]),
+      creater: json['creater'] is String ? json['creater'] : '',
+      createrId: json['creater_id'] is int ? json['creater_id'] : null,
+      genCount: json['gen_count'] is int ? json['gen_count'] : null,
+      isReleased: (json['is_released'] == 1 || json['is_released'] == true),
+      reviewLevel: json['review_level'] is int ? json['review_level'] : 0,
       characterIds: allCharacterIds is String
           ? allCharacterIds.isNotEmpty
               ? allCharacterIds
@@ -125,13 +143,14 @@ class GroupCharacter {
 
   factory GroupCharacter.fromJson(Map<String, dynamic> json) {
     return GroupCharacter(
-      characterId: json['character_id'] ?? 0,
-      name: json['name'] ?? '',
-      avatar: json['avatar'] ?? '',
-      background: json['background'],
-      charge: json['charge'] ?? 0,
-      isPurchase: json['is_purchase'] ?? false,
-      needToPurchase: json['need_to_purchase'] ?? false,
+      characterId: json['character_id'] is int ? json['character_id'] : 0,
+      name: json['name'] is String ? json['name'] : '',
+      avatar: json['avatar'] is String ? json['avatar'] : '',
+      background: json['background'] is String ? json['background'] : null,
+      charge: json['charge'] is int ? json['charge'] : 0,
+      isPurchase: json['is_purchase'] is bool ? json['is_purchase'] : false,
+      needToPurchase:
+          json['need_to_purchase'] is bool ? json['need_to_purchase'] : false,
     );
   }
 
@@ -164,10 +183,10 @@ class GroupRelationship {
 
   factory GroupRelationship.fromJson(Map<String, dynamic> json) {
     return GroupRelationship(
-      char1Id: json['char1_id'] ?? 0,
-      char2Id: json['char2_id'] ?? 0,
-      detail: json['detail'] ?? '',
-      id: json['id'],
+      char1Id: json['char1_id'] is int ? json['char1_id'] : 0,
+      char2Id: json['char2_id'] is int ? json['char2_id'] : 0,
+      detail: json['detail'] is String ? json['detail'] : '',
+      id: json['id'] is String ? json['id'] : null,
     );
   }
 
@@ -193,8 +212,8 @@ class GroupGreeting {
 
   factory GroupGreeting.fromJson(Map<String, dynamic> json) {
     return GroupGreeting(
-      characterId: json['character_id'] ?? 0,
-      greeting: json['greeting'] ?? '',
+      characterId: json['character_id'] is int ? json['character_id'] : 0,
+      greeting: json['greeting'] is String ? json['greeting'] : '',
     );
   }
 
@@ -228,20 +247,23 @@ class GroupSession {
 
   factory GroupSession.fromJson(Map<String, dynamic> json) {
     return GroupSession(
-      sessionId: json['session_id'] ?? 0,
-      isLatest: json['is_latest'] ?? false,
-      customProfile: json['custom_profile'] != null
+      sessionId: json['session_id'] is int ? json['session_id'] : 0,
+      isLatest: json['is_latest'] is bool ? json['is_latest'] : false,
+      customProfile: json['custom_profile'] is Map<String, dynamic>
           ? GroupCustomProfile.fromJson(json['custom_profile'])
           : null,
-      context: (json['context'] as List<dynamic>?)
-              ?.map((e) => GroupContent.fromJson(e))
-              .toList() ??
-          [],
-      extion: json['extion'] != null
+      context: (json['context'] is List<dynamic>
+          ? (json['context'] as List<dynamic>)
+              .map((e) => e is Map<String, dynamic>
+                  ? GroupContent.fromJson(e)
+                  : GroupContent(idx: 0, name: '', timestamp: '', content: ''))
+              .toList()
+          : <GroupContent>[]),
+      extion: json['extion'] is Map<String, dynamic>
           ? GroupExtension.fromJson(json['extion'])
           : null,
-      timestamp: json['timestamp'],
-      isGenerate: json['is_generate'] ?? false,
+      timestamp: json['timestamp'] is String ? json['timestamp'] : null,
+      isGenerate: json['is_generate'] is bool ? json['is_generate'] : false,
     );
   }
 
@@ -274,10 +296,10 @@ class GroupCustomProfile {
 
   factory GroupCustomProfile.fromJson(Map<String, dynamic> json) {
     return GroupCustomProfile(
-      avatar: json['avatar'],
-      username: json['username'],
-      age: json['age'],
-      sex: json['sex'],
+      avatar: json['avatar'] is String ? json['avatar'] : null,
+      username: json['username'] is String ? json['username'] : null,
+      age: json['age'] is int ? json['age'] : null,
+      sex: json['sex'] is String ? json['sex'] : null,
     );
   }
 
@@ -323,18 +345,20 @@ class GroupContent {
 
   factory GroupContent.fromJson(Map<String, dynamic> json) {
     return GroupContent(
-      idx: json['idx'] ?? 0,
-      name: json['name'] ?? '',
-      timestamp: json['timestamp'] ?? '',
-      audio: json['audio'],
-      image: json['image'],
-      imageFromApp: json['image_from_app'],
-      targetMessage: json['target_message'],
-      targetLang: json['target_lang'],
-      content: json['content'] ?? '',
-      characterId: json['character_id']?.toString(),
-      replyId: json['reply_id']?.toString(),
-      uniqId: json['uniq_id'],
+      idx: json['idx'] is int ? json['idx'] : 0,
+      name: json['name'] is String ? json['name'] : '',
+      timestamp: json['timestamp'] is String ? json['timestamp'] : '',
+      audio: json['audio'] is String ? json['audio'] : null,
+      image: json['image'] is String ? json['image'] : null,
+      imageFromApp:
+          json['image_from_app'] is String ? json['image_from_app'] : null,
+      targetMessage:
+          json['target_message'] is String ? json['target_message'] : null,
+      targetLang: json['target_lang'] is String ? json['target_lang'] : null,
+      content: json['content'] is String ? json['content'] : '',
+      characterId: json['character_id'] is String ? json['character_id'] : null,
+      replyId: json['reply_id'] is String ? json['reply_id'] : null,
+      uniqId: json['uniq_id'] is int ? json['uniq_id'] : null,
     );
   }
 
@@ -386,7 +410,8 @@ class GroupExtension {
       title: json['title'],
       scenario: json['scenario'],
       relationship: (json['relationship'] as List<dynamic>?)
-              ?.map((e) => GroupRelationship.fromJson(e))
+              ?.map(
+                  (e) => GroupRelationship.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       characterIds: (json['character_ids'] as List<dynamic>?)
@@ -396,7 +421,7 @@ class GroupExtension {
       tokensScenario: json['tokens_scenario'],
       tokensRelationship: json['tokens_relationship'],
       characters: (json['characters'] as List<dynamic>?)
-              ?.map((e) => GroupCharacter.fromJson(e))
+              ?.map((e) => GroupCharacter.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       background: json['background'],

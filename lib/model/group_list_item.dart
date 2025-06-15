@@ -22,17 +22,33 @@ class GroupListItem {
 
   factory GroupListItem.fromJson(Map<String, dynamic> json) {
     return GroupListItem(
-      groupId: json['group_id'] as int,
-      createrId: json['creater_id'] as int,
-      characterIds: List<int>.from(json['character_ids'] as List),
-      title: json['title'] as String,
-      cover: json['cover'] as String? ?? '',
-      sessionId: json['session_id'] as int?,
-      ext: json['ext'] as String?,
-      characters: (json['characters'] as List<dynamic>?)
-              ?.map((e) => GroupCharacter.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+      groupId: json['group_id'] is int ? json['group_id'] : 0,
+      createrId: json['creater_id'] is int ? json['creater_id'] : 0,
+      characterIds: json['character_ids'] is List
+          ? List<int>.from((json['character_ids'] as List).map((item) =>
+              item is int ? item : (int.tryParse(item.toString()) ?? 0)))
+          : [],
+      title: json['title'] is String ? json['title'] : '',
+      cover: json['cover'] is String ? json['cover'] : '',
+      sessionId: json['session_id'] is int ? json['session_id'] : null,
+      ext: json['ext'] is String ? json['ext'] : null,
+      characters: (json['characters'] is List<dynamic>
+          ? (json['characters'] as List<dynamic>)
+              .map((e) => e is Map<String, dynamic>
+                  ? GroupCharacter.fromJson(e)
+                  : GroupCharacter(
+                      characterId: 0,
+                      createrId: 0,
+                      name: '',
+                      avatar: '',
+                      background: '',
+                      shortDescription: '',
+                      charge: 0,
+                      isPurchase: false,
+                      needToPurchase: false,
+                    ))
+              .toList()
+          : <GroupCharacter>[]),
     );
   }
 
@@ -76,15 +92,17 @@ class GroupCharacter {
 
   factory GroupCharacter.fromJson(Map<String, dynamic> json) {
     return GroupCharacter(
-      characterId: json['character_id'] as int,
-      createrId: json['creater_id'] as int,
-      name: json['name'] as String,
-      avatar: json['avatar'] as String? ?? '',
-      background: json['background'] as String? ?? '',
-      shortDescription: json['short_description'] as String? ?? '',
-      charge: json['charge'] as int? ?? 0,
-      isPurchase: json['is_purchase'] as bool? ?? false,
-      needToPurchase: json['need_to_purchase'] as bool? ?? false,
+      characterId: json['character_id'] is int ? json['character_id'] : 0,
+      createrId: json['creater_id'] is int ? json['creater_id'] : 0,
+      name: json['name'] is String ? json['name'] : '',
+      avatar: json['avatar'] is String ? json['avatar'] : '',
+      background: json['background'] is String ? json['background'] : '',
+      shortDescription:
+          json['short_description'] is String ? json['short_description'] : '',
+      charge: json['charge'] is int ? json['charge'] : 0,
+      isPurchase: json['is_purchase'] is bool ? json['is_purchase'] : false,
+      needToPurchase:
+          json['need_to_purchase'] is bool ? json['need_to_purchase'] : false,
     );
   }
 

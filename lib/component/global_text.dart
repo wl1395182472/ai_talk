@@ -8,7 +8,8 @@ import 'package:flutter/material.dart'
         Widget,
         TextStyle,
         Text,
-        TextOverflow;
+        TextOverflow,
+        FontStyle;
 
 /// 全局文本组件
 ///
@@ -60,6 +61,8 @@ class GlobalText extends StatelessWidget {
   /// 控制文本的粗细程度（正常、粗体等）
   final FontWeight? fontWeight;
 
+  final FontStyle? fontStyle;
+
   /// 构造函数
   ///
   /// 创建一个全局文本组件实例
@@ -85,6 +88,7 @@ class GlobalText extends StatelessWidget {
     this.height,
     this.letterSpacing,
     this.fontWeight,
+    this.fontStyle,
   });
 
   /// 构建 Widget
@@ -107,6 +111,7 @@ class GlobalText extends StatelessWidget {
         height: height, // 设置行高倍数
         letterSpacing: letterSpacing, // 设置字符间距
         fontWeight: fontWeight, // 设置字体粗细
+        fontStyle: fontStyle,
       ),
     );
   }

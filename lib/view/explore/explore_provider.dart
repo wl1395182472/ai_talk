@@ -56,9 +56,9 @@ class ExploreNotifier extends StateNotifier<ExploreState> {
         limit: 10,
         pageNo: 1,
       );
-
       if (response.code == 0) {
-        final newChatRooms = response.result as List<ChatRoom>;
+        final newChatRooms =
+            response.result is List<ChatRoom> ? response.result : <ChatRoom>[];
         state = state.copyWith(
           isRefreshing: false,
           isLoading: false,
@@ -101,12 +101,18 @@ class ExploreNotifier extends StateNotifier<ExploreState> {
       );
 
       if (response.code == 0) {
-        final newChatRooms = response.result as List<ChatRoom>;
-        final updatedList = [...state.chatRoomList, ...newChatRooms];
-
+        final newChatRooms = response.result is List
+            ? (response.result as List)
+                .map((item) => item is Map<String, dynamic>
+                    ? ChatRoom.fromJson(item)
+                    : null)
+                .where((item) => item != null)
+                .cast<ChatRoom>()
+                .toList()
+            : <ChatRoom>[];
         state = state.copyWith(
           isLoadingMore: false,
-          chatRoomList: updatedList,
+          chatRoomList: [...state.chatRoomList, ...newChatRooms],
           currentPage: nextPage,
           hasMoreData: newChatRooms.length >= 10,
         );

@@ -10,8 +10,8 @@ class NovelTag {
 
   factory NovelTag.fromJson(Map<String, dynamic> json) {
     return NovelTag(
-      name: json['name'] as String,
-      description: json['description'] as String?,
+      name: json['name'] is String ? json['name'] : '',
+      description: json['description'] is String ? json['description'] : null,
     );
   }
 
@@ -49,18 +49,23 @@ class Novel {
 
   factory Novel.fromJson(Map<String, dynamic> json) {
     return Novel(
-      novelId: json['novel_id'] as int?,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      coverImage: json['cover_image'] as String?,
-      tags: (json['tags'] as List<dynamic>?)?.cast<String>(),
-      authorId: json['author_id'] as int?,
-      authorName: json['author_name'] as String?,
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
+      novelId: json['novel_id'] is int ? json['novel_id'] : null,
+      title: json['title'] is String ? json['title'] : '',
+      description: json['description'] is String ? json['description'] : '',
+      coverImage: json['cover_image'] is String ? json['cover_image'] : null,
+      tags: (json['tags'] is List<dynamic>)
+          ? (json['tags'] as List<dynamic>)
+              .map((e) => e is String ? e : '')
+              .toList()
+              .cast<String>()
           : null,
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
+      authorId: json['author_id'] is int ? json['author_id'] : null,
+      authorName: json['author_name'] is String ? json['author_name'] : null,
+      createdAt: json['created_at'] is String
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] is String
+          ? DateTime.tryParse(json['updated_at'])
           : null,
     );
   }

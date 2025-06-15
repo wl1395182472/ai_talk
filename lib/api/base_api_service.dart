@@ -238,7 +238,8 @@ class BaseApiService {
     try {
       final response = await _httpService.get(
         '/api/getPaymentImages',
-        fromJsonT: (data) => (data as List).cast<String>(),
+        // 修改 fromJsonT 以正确解析嵌套的图片列表
+        fromJsonT: (data) => (data['images'] as List).cast<String>(),
       );
 
       return ApiResponse<List<String>>(

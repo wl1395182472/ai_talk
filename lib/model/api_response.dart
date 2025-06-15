@@ -25,12 +25,13 @@ class ApiResponse<T> {
     Map<String, dynamic> json, [
     T Function(dynamic)? fromJsonT,
   ]) {
+    final rawResult = json['result'];
     return ApiResponse<T>(
-      code: json['code'] as int,
-      msg: json['msg'] as String,
-      result: json['result'] != null && fromJsonT != null
-          ? fromJsonT(json['result'])
-          : json['result'] as T?,
+      code: json['code'] is int ? json['code'] : 0,
+      msg: json['msg'] is String ? json['msg'] : '',
+      result: rawResult != null && fromJsonT != null
+          ? fromJsonT(rawResult)
+          : (rawResult is T ? rawResult : null),
     );
   }
 

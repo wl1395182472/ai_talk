@@ -64,9 +64,10 @@ class RoleNotifier extends StateNotifier<RoleState> {
         pageNo: currentPage,
         tag: '',
       );
-
       if (response.code == 0) {
-        final newRoles = response.result as List<Character>;
+        final newRoles = response.result is List<Character>
+            ? (response.result as List<Character>)
+            : <Character>[];
         final hasMoreData = newRoles.length >= 10;
 
         List<Character> updatedRolesList;
@@ -115,11 +116,13 @@ class RoleNotifier extends StateNotifier<RoleState> {
       );
 
       if (response.code == 0) {
-        final newRoles = response.result as List<Character>;
+        final newRoles = response.result is List<Character>
+            ? response.result as List<Character>
+            : <Character>[];
         state = state.copyWith(
           isRefreshing: false,
           rolesList: newRoles,
-          currentPage: 2,
+          currentPage: 1, // Reset to page 1
           hasMoreData: newRoles.length >= 10,
         );
       } else {

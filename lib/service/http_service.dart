@@ -91,15 +91,28 @@ class HttpService {
       queryParameters?.putIfAbsent('system', () => Platform.operatingSystem);
       queryParameters?.putIfAbsent('lang', () => 'en');
 
-      if (data is Map<String, dynamic>) {
-        data.putIfAbsent('system', () => Platform.operatingSystem);
-        data.putIfAbsent('lang', () => 'en');
+      // Prepare data for the Dio request
+      dynamic dataForDioRequest = data;
+      if (data is Map) {
+        // If data is a Map, create a new Map<String, dynamic>
+        // to ensure 'system' and 'lang' can be added without type conflicts.
+        Map<String, dynamic> newMapData = {};
+        data.forEach((key, value) {
+          // Ensure keys are strings for the new map.
+          newMapData[key.toString()] = value;
+        });
+
+        newMapData.putIfAbsent('system', () => Platform.operatingSystem);
+        newMapData.putIfAbsent('lang', () => 'en');
+        dataForDioRequest = newMapData;
       }
+      // If data is not a Map (e.g., String, FormData), it's used as is.
 
       final response = await _dio.request(
         url,
-        queryParameters: queryParameters,
-        data: data,
+        queryParameters:
+            queryParameters, // Assuming this is correctly typed by caller or null
+        data: dataForDioRequest, // Use the processed data
         options: options,
         cancelToken: cancelToken,
         onSendProgress: onSendProgress,
@@ -294,7 +307,7 @@ class HttpService {
 
         // 处理SSE消息
         final lines = buffer.split('\n');
-        buffer = lines.removeLast(); // 保留不完整的行
+        buffer = lines.removeLast();
 
         for (final line in lines) {
           if (line.startsWith('data: ')) {
